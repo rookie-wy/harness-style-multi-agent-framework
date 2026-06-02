@@ -1,0 +1,25 @@
+{
+  "skill_id": "calculator",
+  "version": "1.0.0",
+  "semantic": {
+    "description": "执行数学表达式计算",
+    "trigger_weight": 0.9
+  },
+  "interface": {
+    "function_name": "calculate_expression",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "expression": {
+          "type": "string",
+          "description": "数学表达式，如 3+5*2"
+        },
+        "precision": {
+          "type": "integer",
+          "default": 10
+        }
+      },
+      "required": ["expression"]
+    }
+  }
+}

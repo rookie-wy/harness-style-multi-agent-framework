@@ -1,0 +1,19 @@
+{
+  "skill_id": "note",
+  "version": "1.0.0",
+  "semantic": {
+    "description": "记录笔记",
+    "trigger_weight": 0.7
+  },
+  "interface": {
+    "function_name": "save_note",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "content": {"type": "string", "description": "笔记内容"},
+        "category": {"type": "string", "default": "general"}
+      },
+      "required": ["content"]
+    }
+  }
+}

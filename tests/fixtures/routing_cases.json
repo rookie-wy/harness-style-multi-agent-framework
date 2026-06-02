@@ -1,0 +1,81 @@
+{
+  "positive_cases": [
+    {
+      "id": "route_001",
+      "description": "明确的计算请求应该路由到 calculator",
+      "user_input": "帮我算一下 25 乘以 4 等于多少",
+      "expected_skills": ["calculator"],
+      "unexpected_skills": ["reminder", "weather", "note"]
+    },
+    {
+      "id": "route_002",
+      "description": "提醒请求应该路由到 reminder",
+      "user_input": "3分钟后提醒我喝水",
+      "expected_skills": ["reminder"],
+      "unexpected_skills": ["calculator", "weather"]
+    },
+    {
+      "id": "route_003",
+      "description": "笔记请求应该路由到 note",
+      "user_input": "帮我记一下明天下午3点开会",
+      "expected_skills": ["note"],
+      "unexpected_skills": ["calculator", "weather"]
+    },
+    {
+      "id": "route_004",
+      "description": "天气查询应该路由到 weather",
+      "user_input": "今天天气怎么样，需要带伞吗",
+      "expected_skills": ["weather"],
+      "unexpected_skills": ["calculator", "reminder"]
+    },
+    {
+      "id": "route_005",
+      "description": "计算和提醒同时出现应该两个都路由",
+      "user_input": "提醒我5分钟后打电话，顺便算一下100除以3",
+      "expected_skills": ["calculator", "reminder"]
+    }
+  ],
+  "negative_cases": [
+    {
+      "id": "route_neg_001",
+      "description": "编程请求不应该路由到 calculator",
+      "user_input": "帮我写一个计算函数",
+      "expected_skills": [],
+      "unexpected_skills": ["calculator"]
+    },
+    {
+      "id": "route_neg_002",
+      "description": "闲聊不应该路由任何 Skill",
+      "user_input": "你好，今天心情不错",
+      "expected_skills": []
+    },
+    {
+      "id": "route_neg_003",
+      "description": "定义解释不应该路由到 calculator",
+      "user_input": "什么是四则运算",
+      "expected_skills": [],
+      "unexpected_skills": ["calculator"]
+    }
+  ],
+  "edge_cases": [
+    {
+      "id": "route_edge_001",
+      "description": "包含触发词但不是真实意图",
+      "user_input": "我忘了提醒你一件事",
+      "expected_skills": [],
+      "note": "这里'提醒'是被动的，不应该触发 reminder"
+    },
+    {
+      "id": "route_edge_002",
+      "description": "空输入",
+      "user_input": "",
+      "expected_skills": []
+    },
+    {
+      "id": "route_edge_003",
+      "description": "极长输入",
+      "user_input": "天气",
+      "expected_skills": ["weather"]
+    }
+  ]
+}

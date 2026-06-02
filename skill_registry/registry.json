@@ -1,0 +1,46 @@
+[
+  {
+    "skill_id": "calculator",
+    "name": "计算器",
+    "description": "执行数学表达式计算，支持四则运算、括号、小数",
+    "triggers": ["计算", "算一下", "等于多少", "乘以", "除以"],
+    "status": "active",
+    "version": "1.0.0",
+    "schema_path": "src/skills/calculator/schema.json",
+    "md_path": "src/skills/calculator/skill.md",
+    "server_url": "http://localhost:8011"
+  },
+  {
+    "skill_id": "reminder",
+    "name": "提醒助手",
+    "description": "设置定时提醒，如'3分钟后提醒我喝水'",
+    "triggers": ["提醒", "叫我", "喊我", "记得", "别忘了", "通知"],
+    "status": "active",
+    "version": "1.0.0",
+    "schema_path": "src/skills/reminder/schema.json",
+    "md_path": "src/skills/reminder/skill.md",
+    "server_url": "http://localhost:8012"
+  },
+  {
+    "skill_id": "weather",
+    "name": "天气查询",
+    "description": "查询城市天气，包括温度、湿度、天气状况",
+    "triggers": ["天气", "下雨", "温度", "带伞", "穿衣", "冷", "热"],
+    "status": "active",
+    "version": "1.0.0",
+    "schema_path": "src/skills/weather/schema.json",
+    "md_path": "src/skills/weather/skill.md",
+    "server_url": "http://localhost:8013"
+  },
+  {
+    "skill_id": "note",
+    "name": "笔记助手",
+    "description": "记录笔记、想法、待办事项",
+    "triggers": ["记一下", "记录", "写下来", "笔记", "存起来"],
+    "status": "active",
+    "version": "1.0.0",
+    "schema_path": "src/skills/note/schema.json",
+    "md_path": "src/skills/note/skill.md",
+    "server_url": "http://localhost:8014"
+  }
+]

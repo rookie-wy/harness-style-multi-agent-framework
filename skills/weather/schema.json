@@ -1,0 +1,25 @@
+{
+  "skill_id": "weather",
+  "version": "1.0.0",
+  "semantic": {
+    "description": "查询城市天气，支持百度天气API，默认成都",
+    "trigger_weight": 0.7
+  },
+  "interface": {
+    "function_name": "query_weather",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "city": {
+          "type": "string",
+          "description": "城市名称，不传则使用用户默认城市"
+        },
+        "user_id": {
+          "type": "integer",
+          "description": "用户ID，用于读取/存储默认城市"
+        }
+      },
+      "required": ["user_id"]
+    }
+  }
+}

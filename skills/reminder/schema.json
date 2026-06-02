@@ -1,0 +1,19 @@
+{
+  "skill_id": "reminder",
+  "version": "1.0.0",
+  "semantic": {
+    "description": "设置定时提醒",
+    "trigger_weight": 0.8
+  },
+  "interface": {
+    "function_name": "set_reminder",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "content": {"type": "string", "description": "提醒内容"},
+        "delay_minutes": {"type": "integer", "description": "延迟分钟数"}
+      },
+      "required": ["content", "delay_minutes"]
+    }
+  }
+}

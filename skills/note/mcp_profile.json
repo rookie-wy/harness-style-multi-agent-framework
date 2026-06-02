@@ -1,0 +1,8 @@
+{
+  "mcp_protocol": "2024-11-05",
+  "extends": "mcp://life-assistant/skill-response/v1",
+  "output_contract": {
+    "meta": { "skill_id": "note", "skill_version": "1.0.0" },
+    "error_codes": ["INVALID_PARAMS"]
+  }
+}

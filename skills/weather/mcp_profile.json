@@ -1,0 +1,8 @@
+{
+  "mcp_protocol": "2024-11-05",
+  "extends": "mcp://life-assistant/skill-response/v1",
+  "output_contract": {
+    "meta": { "skill_id": "weather", "skill_version": "1.0.0" },
+    "error_codes": ["EXTERNAL_API_ERROR", "TIMEOUT", "INVALID_PARAMS"]
+  }
+}
