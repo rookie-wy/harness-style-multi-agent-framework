@@ -6,6 +6,7 @@ import httpx
 import asyncio
 from langgraph.graph import StateGraph, END
 from config.logger import get_logger
+from sub_agents import WeatherAgent, NoteAgent
 
 SRC_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 if SRC_DIR not in sys.path:
@@ -44,6 +45,10 @@ class LifeAssistantOrchestrator:
         self.registry_url = registry_url
         self.knowledge_base = VectorKnowledgeBase(persist_dir=chroma_dir)
         self.graph = self._build_graph()
+        self.sub_agents = {
+            "weather": WeatherAgent(),
+            "note": NoteAgent()
+        }
 
     def _get_client(self):
         return httpx.AsyncClient(timeout=30.0, base_url=self.registry_url)
@@ -132,6 +137,14 @@ class LifeAssistantOrchestrator:
 
             state["routed_skills"] = [s["skill_id"] for s in matched]
 
+            # 在 router_node 中，matched 列表构建完成后，对 weather Skill 尝试经验匹配
+            if "weather" in [s["skill_id"] for s in matched]:
+                from src.storage.experience_store import find_similar_experience
+                cached_params = await find_similar_experience(state["user_input"], "weather")
+                if cached_params:
+                    # 将缓存的参数注入到 state 中，供子Agent使用
+                    state["cached_params"] = cached_params
+
             if state.get("knowledge_context"):
                 logger.info("router_with_context", context_len=len(state["knowledge_context"]))
 
@@ -177,21 +190,23 @@ class LifeAssistantOrchestrator:
     # ==========================================
     # 节点 4：并行执行
     # ==========================================
+    # ==========================================
+    # 节点 4：并行执行（子Agent优先）
+    # ==========================================
     async def executor_node(self, state: AssistantState) -> AssistantState:
-        async def call_one(tool: dict) -> dict:
-            try:
-                async with httpx.AsyncClient(timeout=10.0) as client:
-                    resp = await client.post(
-                        f"{self.registry_url}/skills/{tool['skill_id']}/execute",
-                        json={"params": {}, "user_input": state["user_input"]}
-                    )
-                    resp.raise_for_status()
-                    return resp.json()
-            except Exception as e:
-                return {"meta": {"status": "error"}, "display": str(e), "hints": []}
+        """使用子Agent执行任务，未知Skill走直接调用"""
+        results = []
+        for tool in state["tool_definitions"]:
+            skill_id = tool.get("skill_id", "")
+            agent = self.sub_agents.get(skill_id)
+            if agent:
+                cached_params = state.get("cached_params", {})
+                result = await agent.execute(state["user_input"], state.get("user_id", 1), cached_params)
+            else:
+                result = await self._call_skill_direct(skill_id, state["user_input"])
+            results.append(result)
 
-        tasks = [call_one(t) for t in state["tool_definitions"]]
-        state["tool_results"] = await asyncio.gather(*tasks, return_exceptions=True)
+        state["tool_results"] = results
 
         first = ""
         if state.get("tool_results") and isinstance(state["tool_results"][0], dict):
@@ -199,6 +214,18 @@ class LifeAssistantOrchestrator:
         logger.info("executor_result", results_count=len(state.get("tool_results", [])), first_display=first or "empty")
         return state
 
+    async def _call_skill_direct(self, skill_id: str, user_input: str) -> dict:
+        """原有直接调用Skill的方法（用于未代理的Skill）"""
+        try:
+            async with httpx.AsyncClient(timeout=10.0) as client:
+                resp = await client.post(
+                    f"{self.registry_url}/skills/{skill_id}/execute",
+                    json={"params": {}, "user_input": user_input}
+                )
+                resp.raise_for_status()
+                return resp.json()
+        except Exception as e:
+            return {"meta": {"status": "error"}, "display": str(e), "hints": []}
     # ==========================================
     # 节点 5：整合结果
     # ==========================================
