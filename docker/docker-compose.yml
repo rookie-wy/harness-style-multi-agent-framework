@@ -1,0 +1,145 @@
+version: "3.8"
+
+services:
+  # ========================
+  # 1. Redis 缓存
+  # ========================
+  redis:
+    image: redis:7-alpine
+    container_name: agent-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    restart: unless-stopped
+
+  # ========================
+  # 2. 注册中心
+  # ========================
+  registry:
+    build: .
+    container_name: agent-registry
+    command: uvicorn src.skill_registry.registry:app --host 0.0.0.0 --port 8001
+    ports:
+      - "8001:8001"
+    depends_on:
+      redis:
+        condition: service_healthy
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+
+  # ========================
+  # 3. 计算器 Skill
+  # ========================
+  calculator:
+    build: .
+    container_name: agent-calculator
+    command: uvicorn src.skills.calculator.server:app --host 0.0.0.0 --port 8011
+    ports:
+      - "8011:8011"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8011/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+
+  # ========================
+  # 4. 提醒 Skill
+  # ========================
+  reminder:
+    build: .
+    container_name: agent-reminder
+    command: uvicorn src.skills.reminder.server:app --host 0.0.0.0 --port 8012
+    ports:
+      - "8012:8012"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8012/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+
+  # ========================
+  # 5. 天气 Skill
+  # ========================
+  weather:
+    build: .
+    container_name: agent-weather
+    command: uvicorn src.skills.weather.server:app --host 0.0.0.0 --port 8013
+    ports:
+      - "8013:8013"
+    environment:
+      - BAIDU_WEATHER_AK=${BAIDU_WEATHER_AK}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8013/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+
+  # ========================
+  # 6. 笔记 Skill
+  # ========================
+  note:
+    build: .
+    container_name: agent-note
+    command: uvicorn src.skills.note.server:app --host 0.0.0.0 --port 8014
+    ports:
+      - "8014:8014"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8014/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+
+  # ========================
+  # 7. Streamlit 前端（含主Agent、ChromaDB）
+  # ========================
+  streamlit:
+    build: .
+    container_name: agent-streamlit
+    command: streamlit run src/app.py --server.port 8501 --server.address 0.0.0.0
+    ports:
+      - "8501:8501"
+    depends_on:
+      registry:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      - REGISTRY_URL=http://registry:8001
+      - REDIS_URL=redis://redis:6379/0
+      - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY}
+      - BAIDU_WEATHER_AK=${BAIDU_WEATHER_AK}
+    volumes:
+      - chroma_data:/app/src/chroma_db       # 持久化向量库
+      - sqlite_data:/app/src                  # 持久化 SQLite 数据库
+      - logs_data:/app/src/logs               # 持久化日志
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8501"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+# ========================
+# 数据卷
+# ========================
+volumes:
+  redis_data:
+  chroma_data:
+  sqlite_data:
+  logs_data:
