@@ -102,6 +102,28 @@ graph TD
 
 ##  快速开始
 
+### 使用 Docker 一键部署
+
+```bash
+# 1. 克隆项目
+git clone https://github.com/你的用户名/life-assistant.git
+cd life-assistant
+
+# 2. 配置 API 密钥
+cp .env.example .env
+# 编辑 .env，填入你的 DEEPSEEK_API_KEY 和 BAIDU_WEATHER_AK
+
+# 3. 一键启动
+docker compose -f docker/docker-compose.yml up -d
+
+# 4. 访问
+浏览器打开 http://localhost:8501
+
+# 5. 停止
+docker compose -f docker/docker-compose.yml down
+
+
+
 ### 环境要求
 - Python 3.11+
 - Redis 7.0+
